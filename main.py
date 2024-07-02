@@ -1,47 +1,45 @@
 import requests
+import os
 
-# リクエストURLとヘッダー
-url = 'https://reserve.tokyodisneyresort.jp/hotel/api/queryHotelPriceStock/'
-headers = {
-    'User-Agent': 'PostmanRuntime/7.38.0'
-}
-
-# リクエストパラメータ
-payload = {
-    'commodityCD': 'HOTDHSCL0005N',
-    'useDate': '20240801',
-    'stayingDays': '1',
-    'adultNum': '2',
-    'childNum': '0',
-    'roomsNum': '1',
-    'stockQueryType': '3',
-    'rrc3005ProcessingType': 'update'
-}
-
-# Line Notifyのトークン
-line_notify_token = 'cvopaAfNZVxLf9wzZ0VhrPVF1z18a8n3g8moPx1npiG'
-line_notify_url = 'https://notify-api.line.me/api/notify'
-
-def check_hotel_availability():
-    # ホテルの空き状況を問い合わせる
-    response = requests.post(url, headers=headers, data=payload)
+def check_availability():
+    url = "https://reserve.tokyodisneyresort.jp/hotel/api/queryHotelPriceStock/"
     
-    if response.status_code == 200:
-        # レスポンスに'remainStockNum'が含まれているかどうかをチェック
-        if 'remainStockNum' in response.text:
-            # Line Notifyで通知する
-            message = 'ディズニーのホテルに空きがあります！'
-            line_notify_headers = {  # ローカル変数の名前を変更
-                'Authorization': f'Bearer {line_notify_token}'
-            }
-            data = {
-                'message': message
-            }
-            requests.post(line_notify_url, headers=line_notify_headers, data=data)  # 修正した変数名を使用
-        else:
-            print('空きはありませんでした。')
-    else:
-        print(f'リクエストが失敗しました。ステータスコード: {response.status_code}')
+    headers = {
+        "User-Agent": "PostmanRuntime/7.38.0"
+    }
+    
+    data = {
+        "commodityCD": "HOTDHSCL0005N",
+        "useDate": "20240901",
+        "stayingDays": "1",
+        "adultNum": "2",
+        "childNum": "0",
+        "roomsNum": "1",
+        "stockQueryType": "3",
+        "rrc3005ProcessingType": "update"
+    }
+    
+    response = requests.post(url, headers=headers, data=data)
+    
+    if "remainStockNum" in response.text:
+        send_line_notify("ディズニーホテルに空きが出ました！")
+        return True
+    return False
 
-if __name__ == '__main__':
-    check_hotel_availability()
+def send_line_notify(message):
+    line_notify_token = os.environ.get('LINE_NOTIFY_TOKEN')
+    if not line_notify_token:
+        print("LINE_NOTIFY_TOKEN is not set")
+        return
+    
+    line_notify_api = "https://notify-api.line.me/api/notify"
+    headers = {"Authorization": f"Bearer {line_notify_token}"}
+    data = {"message": message}
+    requests.post(line_notify_api, headers=headers, data=data)
+
+if __name__ == "__main__":
+    print("ディズニーホテル空き状況をチェックしています...")
+    if check_availability():
+        print("空きが見つかりました。LINE Notifyで通知を送信しました。")
+    else:
+        print("空きはありませんでした。")
