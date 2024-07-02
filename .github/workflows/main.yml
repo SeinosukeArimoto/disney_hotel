@@ -1,27 +1,28 @@
-name: Check Hotel Availability
+name: Check Disney Hotel Availability
 
 on:
   schedule:
-    - cron: "*/1 * * * *"
-  workflow_dispatch:
+    - cron: '*/1 * * * *'  # 10分ごとに実行
+  workflow_dispatch:  # 手動実行のオプション
 
 jobs:
   check-availability:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
-
-      - name: Run the script
-        run: python main.py
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+    
+    - name: Run availability checker
+      env:
+        LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
+      run: python main.py
