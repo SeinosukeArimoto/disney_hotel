@@ -8,7 +8,7 @@ headers = {
 
 # リクエストパラメータ
 payload = {
-    'commodityCD': 'HOTDHSCL0005N',
+    'commodityCD': 'HOFSHBST0001N',
     'useDate': '20240901',
     'stayingDays': '1',
     'adultNum': '2',
